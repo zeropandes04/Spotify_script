@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotify Transcript Tool</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- ── Header ── -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="logo">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="11" fill="#1DB954"/>
+            <path d="M16.5 16.5c-.2 0-.4-.1-.5-.2-2.1-1.3-4.8-1.6-7.9-.9-.3.1-.6-.1-.7-.4-.1-.3.1-.6.4-.7 3.4-.8 6.4-.4 8.7 1 .3.2.4.5.2.8-.1.3-.2.4-.2.4zm1.1-2.7c-.2 0-.4-.1-.6-.2-2.4-1.5-6-1.9-8.8-1-.3.1-.7-.1-.8-.4-.1-.3.1-.7.4-.8 3.2-.9 7.1-.5 9.8 1.1.3.2.4.6.2.9-.1.3-.1.4-.2.4zm.1-2.8c-2.9-1.7-7.6-1.9-10.4-1-.4.1-.8-.1-.9-.5-.1-.4.1-.8.5-.9 3.2-1 8.3-.8 11.5 1.2.3.2.5.6.3 1-.2.3-.6.5-1 .2z" fill="white"/>
+          </svg>
+          <span class="logo-text">Transcript Tool</span>
+        </div>
+        <p class="header-sub">Fetch transcripts from Spotify podcast episodes</p>
+      </div>
+    </header>
+
+    <!-- ── Main ── -->
+    <main class="main">
+
+      <!-- ── Form card ── -->
+      <section class="card form-card">
+        <h2 class="card-title">Get Transcript</h2>
+
+        <form id="transcript-form" novalidate>
+
+          <!-- Episode URL -->
+          <div class="field">
+            <label for="url">Spotify Episode URL</label>
+            <input
+              id="url"
+              type="url"
+              placeholder="https://open.spotify.com/episode/..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <span class="field-hint">Paste the URL from the Spotify episode page or share menu</span>
+          </div>
+
+          <!-- Credentials row -->
+          <div class="field-row">
+            <div class="field">
+              <label for="client-id">Client ID</label>
+              <input
+                id="client-id"
+                type="text"
+                placeholder="From developer.spotify.com"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+            <div class="field">
+              <label for="client-secret">Client Secret</label>
+              <input
+                id="client-secret"
+                type="password"
+                placeholder="••••••••••••••••••••••••••••••••"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+
+          <details class="creds-help">
+            <summary>How to get credentials</summary>
+            <ol>
+              <li>Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a></li>
+              <li>Create an app (any name works)</li>
+              <li>Set <strong>Redirect URI</strong> to <code>http://localhost:8888/callback</code></li>
+              <li>Copy the <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+            </ol>
+          </details>
+
+          <!-- Format selector -->
+          <div class="field">
+            <label>Output Format</label>
+            <div class="format-grid">
+              <label class="format-opt selected" data-fmt="txt">
+                <input type="radio" name="format" value="txt" checked />
+                <span class="fmt-name">TXT</span>
+                <span class="fmt-desc">Plain text</span>
+              </label>
+              <label class="format-opt" data-fmt="srt">
+                <input type="radio" name="format" value="srt" />
+                <span class="fmt-name">SRT</span>
+                <span class="fmt-desc">Subtitles</span>
+              </label>
+              <label class="format-opt" data-fmt="vtt">
+                <input type="radio" name="format" value="vtt" />
+                <span class="fmt-name">VTT</span>
+                <span class="fmt-desc">WebVTT</span>
+              </label>
+              <label class="format-opt" data-fmt="json">
+                <input type="radio" name="format" value="json" />
+                <span class="fmt-name">JSON</span>
+                <span class="fmt-desc">Structured</span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submit-btn">
+            <span class="btn-text">Fetch Transcript</span>
+            <span class="btn-spinner" hidden></span>
+          </button>
+
+        </form>
+      </section>
+
+      <!-- ── Result card (hidden until we have a result) ── -->
+      <section class="card result-card" id="result-card" hidden>
+
+        <!-- Episode info bar -->
+        <div class="episode-info" id="episode-info">
+          <img id="ep-image" class="ep-thumb" src="" alt="" />
+          <div class="ep-meta">
+            <div class="ep-show" id="ep-show"></div>
+            <div class="ep-title" id="ep-title"></div>
+            <div class="ep-badges">
+              <span class="badge" id="ep-date"></span>
+              <span class="badge badge-source" id="ep-source"></span>
+              <span class="badge" id="ep-words"></span>
+              <span class="badge" id="ep-segs"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="result-toolbar">
+          <span class="result-label">Transcript</span>
+          <div class="toolbar-actions">
+            <button class="btn btn-sm" id="copy-btn" title="Copy to clipboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+            <button class="btn btn-sm btn-green" id="download-btn" title="Download file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download
+            </button>
+          </div>
+        </div>
+
+        <!-- Transcript viewer -->
+        <pre id="transcript-output" class="transcript-output"></pre>
+
+      </section>
+
+      <!-- ── Error card ── -->
+      <section class="card error-card" id="error-card" hidden>
+        <div class="error-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="error-body">
+          <strong>Error</strong>
+          <p id="error-message"></p>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      Transcripts may not be available for all episodes &mdash; availability depends on the show and Spotify's native transcript support.
+    </footer>
+
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
