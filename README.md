@@ -11,6 +11,13 @@ pip install -r requirements.txt
 Set your Spotify credentials (from [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)):
 
 ```bash
+cp .env.example .env
+# then edit .env and fill in your Client ID and Secret
+```
+
+Or export them in your shell:
+
+```bash
 export SPOTIFY_CLIENT_ID=your_client_id
 export SPOTIFY_CLIENT_SECRET=your_client_secret
 ```

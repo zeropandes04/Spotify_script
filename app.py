@@ -6,6 +6,9 @@ app.py — Flask web frontend for spotify_transcript.py
 import os
 import io
 from flask import Flask, render_template, request, jsonify, send_file
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from spotify_transcript import get_transcript, extract_episode_id
 

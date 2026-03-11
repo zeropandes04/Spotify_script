@@ -37,6 +37,12 @@ import time
 from pathlib import Path
 
 try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
+try:
     import requests
 except ImportError:
     sys.exit("Missing: pip install requests")
